@@ -104,10 +104,10 @@ export default class Camera {
     // --- Input Handling ---
     handleInputs(keys) {
         // Rotation (Arrows)
-        if (keys['ArrowLeft'])  this.rotation[0] += this.rotationSpeed;
-        if (keys['ArrowRight']) this.rotation[0] -= this.rotationSpeed;
-        if (keys['ArrowUp'])    this.rotation[1] += this.rotationSpeed;
-        if (keys['ArrowDown'])  this.rotation[1] -= this.rotationSpeed;
+        if (keys['ArrowLeft'])  { this.rotation[0] += this.rotationSpeed; this.updateViewMatrix(); }
+        if (keys['ArrowRight']) { this.rotation[0] -= this.rotationSpeed; this.updateViewMatrix(); }
+        if (keys['ArrowUp'])    { this.rotation[1] += this.rotationSpeed; this.updateViewMatrix(); }
+        if (keys['ArrowDown'])  { this.rotation[1] -= this.rotationSpeed; this.updateViewMatrix(); }
 
         // Prevent camera from flipping upside down (Pitch cap)
         const limit = Math.PI / 2 - 0.01;

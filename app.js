@@ -115,6 +115,7 @@ var InitDemo = async function () {
 	});
 
 	var millisUniformLocation = defaultShader.getUniformLocation('millis');
+	var camPosUniformLocation = defaultShader.getUniformLocation('camPos');
 
 	//var texture = loadTexture(gl, './textures/test.png')
 	//gl.activeTexture(gl.TEXTURE0);
@@ -124,10 +125,9 @@ var InitDemo = async function () {
 	//gl.uniform1i(textureUniformLocation, 0)
 
 	const entities = [];
-
+	
 	const monkey = new Entity('./objects/suzanne.obj', gl, 0, 0, 0);
 	entities.push(monkey);
-	
 
 	// --- Main render loop ---
 	var loop = function() {
@@ -141,8 +141,9 @@ var InitDemo = async function () {
 		defaultShader.use();
     	camera.bind(defaultShader);
 
-		// - Pass in the current time millis uniform -
+		// - Pass uniforms -
 		gl.uniform1f(millisUniformLocation, performance.now());
+		gl.uniform3fv(camPosUniformLocation, camera.position);
 
     	// - Draw every object in the scene -
     	entities.forEach(entity => {

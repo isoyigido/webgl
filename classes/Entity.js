@@ -14,6 +14,8 @@ export default class Entity {
         this.position = glMatrix.vec3.fromValues(x, y, z);
         // Initialise rotation
         this.rotation = glMatrix.vec3.fromValues(0, 0, 0);
+        // Initialise scale (Default to 1, 1, 1)
+        this.scale = glMatrix.vec3.fromValues(1, 1, 1);
 
         // Initialise the identity matrix
         this.identityMatrix = new Float32Array(16);
@@ -123,13 +125,36 @@ export default class Entity {
         this.updateWorldMatrix();
     }
 
+    // Adjusts the scale of the entity
+    adjustScale(x, y, z) {
+        this.scale[0] += x;
+        this.scale[1] += y;
+        this.scale[2] += z;
+
+        this.updateWorldMatrix();
+    }
+
+    // Sets the scale of the entity
+    setScale(x, y, z) {
+        this.scale[0] = x;
+        this.scale[1] = y;
+        this.scale[2] = z;
+
+        this.updateWorldMatrix();
+    }
+
     // Updates the entity world matrix
     updateWorldMatrix() {
+        // 1. Reset to identity/translation
         glMatrix.mat4.translate(this.worldMatrix, this.identityMatrix, this.position);
 
+        // 2. Apply Rotations
         glMatrix.mat4.rotateX(this.worldMatrix, this.worldMatrix, this.rotation[1]);
         glMatrix.mat4.rotateY(this.worldMatrix, this.worldMatrix, this.rotation[0]);
         glMatrix.mat4.rotateZ(this.worldMatrix, this.worldMatrix, this.rotation[2]);
+
+        // 3. Apply Scale
+        glMatrix.mat4.scale(this.worldMatrix, this.worldMatrix, this.scale);
     }
 
     // Renders the entity on the input GL context and shader

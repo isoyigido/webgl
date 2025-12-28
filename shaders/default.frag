@@ -13,8 +13,6 @@ const float ambientLight = 0.1;
 const float specularLight = 0.5;
 
 void main() {
-    // gl_FragColor = texture2D(uTexture, fragTexCoord);
-
     vec3 normal = normalize(fragNormal);
     vec3 lightDirection = normalize(lightPos - fragPos);
 
@@ -25,5 +23,7 @@ void main() {
     float specAmount = max(dot(viewDirection, reflectionDirection), 0.);
     float specular = specularLight * specAmount;
 
-    gl_FragColor = vec4(fragColor * (diffuse + ambientLight + specular), 1.0);
+    vec4 texCol = texture2D(uTexture, fragTexCoord);
+
+    gl_FragColor = vec4(texCol.rgb * (diffuse + ambientLight + specular), texCol.a);
 }

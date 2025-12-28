@@ -1,6 +1,7 @@
 import Shader from "./classes/Shader.js";
 import Camera from "./classes/Camera.js"
-import Entity from "./classes/Entity.js"
+import Model from "./classes/Model.js"
+import Material from "./classes/Material.js"
 
 // Helper function to load text files
 async function loadShaderText(url) {
@@ -10,36 +11,6 @@ async function loadShaderText(url) {
     }
     return await response.text();
 };
-
-function loadTexture(gl, url) {
-	// Create the texture
-    const texture = gl.createTexture();
-	// Bind the texture
-    gl.bindTexture(gl.TEXTURE_2D, texture);
-
-    // Placeholder: 1x1 blue pixel
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([0, 0, 255, 255]));
-
-	// Create the image
-    const image = new Image();
-
-	// Set on image load
-    image.onload = () => {
-		// Bind the texture
-        gl.bindTexture(gl.TEXTURE_2D, texture);
-		// Get the texture image
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
-        
-        // Generate mipmaps if the image is a power of 2 (e.g., 256x256)
-        gl.generateMipmap(gl.TEXTURE_2D);
-    };
-
-	// Set the image source
-    image.src = url;
-
-	// Return the texture
-    return texture;
-}
 
 var camera;
 const keys = {};
@@ -92,7 +63,7 @@ var InitDemo = async function () {
     defaultShader.use();
 
 	// Create the camera
-	camera = new Camera(gl, Math.PI / 4, canvas.clientWidth / canvas.clientHeight);
+	camera = new Camera(gl, Math.PI / 3, canvas.clientWidth / canvas.clientHeight);
 	// Bind the shaders to the camera
 	camera.bind(defaultShader);
 
@@ -117,17 +88,25 @@ var InitDemo = async function () {
 	var millisUniformLocation = defaultShader.getUniformLocation('millis');
 	var camPosUniformLocation = defaultShader.getUniformLocation('camPos');
 
-	//var texture = loadTexture(gl, './textures/test.png')
-	//gl.activeTexture(gl.TEXTURE0);
-	//gl.bindTexture(gl.TEXTURE_2D, texture);
-
-	//var textureUniformLocation = defaultShader.getUniformLocation('uTexture');
-	//gl.uniform1i(textureUniformLocation, 0)
-
-	const entities = [];
+	const models = [];
 	
-	const monkey = new Entity('./objects/suzanne.obj', gl, 0, 0, 0);
-	entities.push(monkey);
+	const testModel = new Model('test_object', gl, 0, 2.8, 0);
+	const idk = new Model('test_object', gl, 5, 5, 5);
+	const bus = new Model('bus', gl, -8, 0, 0);
+	const ak = new Model('ak', gl, 0, 0, 8);
+	testModel.setScale(3, 3, 3);
+	idk.setScale(0.2, 0.2, 0.2);
+	bus.rotate(-1.5, 0.0, 0.0)
+	bus.setScale(0.2, 0.2, 0.2);
+	ak.setScale(0.05, 0.05, 0.05);
+	ak.rotate(Math.PI/2, 0, 0);
+
+	models.push(testModel);
+	models.push(idk);
+	models.push(bus);
+	models.push(ak);
+
+	Material.setupShaderSamplers(gl, defaultShader);
 
 	// --- Main render loop ---
 	var loop = function() {
@@ -146,8 +125,8 @@ var InitDemo = async function () {
 		gl.uniform3fv(camPosUniformLocation, camera.position);
 
     	// - Draw every object in the scene -
-    	entities.forEach(entity => {
-      		entity.render(gl, defaultShader);
+    	models.forEach(model => {
+      		model.render(gl, defaultShader);
     	});
 
 		requestAnimationFrame(loop);

@@ -30,12 +30,10 @@ export default class Mesh {
         const posLoc = shader.getAttribLocation('aPos');
         // Get the location of the normal attribute
         const normalLoc = shader.getAttribLocation('aNormal');
-        // Get the location of the color attribute
-        const colorLoc = shader.getAttribLocation('aColor');
         // Get the location of the texture coordinate attribute
         const texCoordLoc = shader.getAttribLocation('aTexCoord');
         // Get the stride per primitive (triangle)
-        const stride = 11 * Float32Array.BYTES_PER_ELEMENT;
+        const stride = 8 * Float32Array.BYTES_PER_ELEMENT;
 
         // Bind the vertex buffer
         gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
@@ -43,13 +41,11 @@ export default class Mesh {
         // Get the vertex attribute pointers
         gl.vertexAttribPointer(posLoc, 3, gl.FLOAT, gl.FALSE, stride, 0);
         gl.vertexAttribPointer(normalLoc, 3, gl.FLOAT, gl.FALSE, stride, 3 * Float32Array.BYTES_PER_ELEMENT);
-        gl.vertexAttribPointer(colorLoc, 3, gl.FLOAT, gl.FALSE, stride, 6 * Float32Array.BYTES_PER_ELEMENT);
-        gl.vertexAttribPointer(texCoordLoc, 2, gl.FLOAT, gl.FALSE, stride, 9 * Float32Array.BYTES_PER_ELEMENT);
+        gl.vertexAttribPointer(texCoordLoc, 2, gl.FLOAT, gl.FALSE, stride, 6 * Float32Array.BYTES_PER_ELEMENT);
 
         // Enable the vertex attribute arrays
         gl.enableVertexAttribArray(posLoc);
         gl.enableVertexAttribArray(normalLoc);
-        gl.enableVertexAttribArray(colorLoc);
         gl.enableVertexAttribArray(texCoordLoc);
 
         // Bind the index buffer

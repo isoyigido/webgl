@@ -2,15 +2,7 @@ import Shader from "./classes/Shader.js";
 import Camera from "./classes/Camera.js"
 import Model from "./classes/Model.js"
 import Material from "./classes/Material.js"
-
-// Helper function to load text files
-async function loadShaderText(url) {
-    const response = await fetch(url);
-    if (!response.ok) {
-        throw new Error(`Failed to load shader: ${url}`);
-    }
-    return await response.text();
-};
+import SkyBox from "./classes/SkyBox.js"
 
 var camera;
 const keys = {};
@@ -53,19 +45,15 @@ var InitDemo = async function () {
 	gl.frontFace(gl.CCW);
 	gl.cullFace(gl.BACK);
 
-	const vsText = await loadShaderText('./shaders/default.vert');
-    const fsText = await loadShaderText('./shaders/default.frag');
-
 	// Create new Shader object
-    const defaultShader = new Shader(gl, vsText, fsText);
+    const defaultShader = await Shader.create(gl, 'default.vert', 'default.frag');
+	const skyboxShader = await Shader.create(gl, 'skybox.vert', 'skybox.frag');
 
-	// Use default shader
-    defaultShader.use();
+	// Create the sky box
+	const skyBox = await SkyBox.create(gl, 'clear_day.png');
 
 	// Create the camera
 	camera = new Camera(gl, Math.PI / 3, canvas.clientWidth / canvas.clientHeight);
-	// Bind the shaders to the camera
-	camera.bind(defaultShader);
 
 	window.addEventListener('keydown', (e) => {
     	keys[e.code] = true;
@@ -106,7 +94,10 @@ var InitDemo = async function () {
 	models.push(bus);
 	models.push(ak);
 
+	// Set up shader samplers for the Material class
 	Material.setupShaderSamplers(gl, defaultShader);
+	// Set up shader samplers for the SkyBox class
+	SkyBox.setupShaderSamplers(gl, skyboxShader);
 
 	// --- Main render loop ---
 	var loop = function() {
@@ -116,9 +107,10 @@ var InitDemo = async function () {
 		// - Clear the buffers -
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-		// - Use the shader and bind the camera -
+		// - Use default shader and bind the camera -
 		defaultShader.use();
-    	camera.bind(defaultShader);
+		camera.bind(defaultShader);
+		gl.depthFunc(gl.LESS);
 
 		// - Pass uniforms -
 		gl.uniform1f(millisUniformLocation, performance.now());
@@ -128,6 +120,14 @@ var InitDemo = async function () {
     	models.forEach(model => {
       		model.render(gl, defaultShader);
     	});
+
+		// - Use the sky box shader and bind the camera -
+		skyboxShader.use();
+		camera.bind(skyboxShader);
+		gl.depthFunc(gl.LEQUAL);
+
+		// - Render the sky box -
+		skyBox.render(skyboxShader);
 
 		requestAnimationFrame(loop);
 	}

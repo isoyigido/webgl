@@ -69,6 +69,10 @@ export default class Camera {
 
     // Helper to send both matrices to a shader at once
     bind(shader) {
+        // Use the shader
+        shader.use();
+
+        // Send the view and projection matrices
         this.gl.uniformMatrix4fv(shader.getUniformLocation('mView'), false, this.viewMatrix);
         this.gl.uniformMatrix4fv(shader.getUniformLocation('mProj'), false, this.projMatrix);
     }

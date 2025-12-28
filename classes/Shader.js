@@ -1,20 +1,39 @@
 export default class Shader {
-    /**
-     * Shader constructor
-     * @param {*} gl The GL context
-     * @param {*} vertexSource The source text for the vertex shader
-     * @param {*} fragmentSource The source text for the fragment shader
-    */
-    constructor(gl, vertexSource, fragmentSource) {
-        // Set GL context
+    constructor(gl, program) {
         this.gl = gl;
-        // Create the shader program
-        this.program = this._createProgram(vertexSource, fragmentSource);
-        // Initialise attributes
+        this.program = program;
         this.attribs = {};
-        // Initialise uniforms
         this.uniforms = {};
     }
+
+    // Static factory method to handle async loading
+    static async create(gl, vertexName, fragmentName) {
+        // Get the vertex and fragment shader texts
+        const vsText = await this.loadShaderText('/shaders/' + vertexName);
+        const fsText = await this.loadShaderText('/shaders/' + fragmentName);
+        
+        // Create the shader program
+        const program = this._createProgram(gl, vsText, fsText);
+
+        // Return a new Shader object
+        return new Shader(gl, program);
+    }
+
+    // Helper method for loading in text for shaders
+    static async loadShaderText(url) {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`Failed to load shader: ${url}`);
+        return await response.text();
+    }
+
+    // Helper function to load text files
+    async loadShaderText(url) {
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`Failed to load shader: ${url}`);
+        }
+        return await response.text();
+    };
 
     // Public method to use this shader
     use() {
@@ -38,13 +57,11 @@ export default class Shader {
     }
 
     // Private helper for creating a shader program
-    _createProgram(vertCode, fragCode) {
-        // Initialise the constant for the GL context
-        const gl = this.gl;
+    static _createProgram(gl, vertCode, fragCode) {
         // Compile the vertex shader
-        const vs = this._compileShader(gl.VERTEX_SHADER, vertCode);
+        const vs = this._compileShader(gl, gl.VERTEX_SHADER, vertCode);
         // Compile the fragment shader
-        const fs = this._compileShader(gl.FRAGMENT_SHADER, fragCode);
+        const fs = this._compileShader(gl, gl.FRAGMENT_SHADER, fragCode);
 
         // Generate the program
         const program = gl.createProgram();
@@ -64,9 +81,7 @@ export default class Shader {
     }
 
     // Private helper for compiling a shader
-    _compileShader(type, source) {
-        // Initialise the constant for the GL context
-        const gl = this.gl;
+    static _compileShader(gl, type, source) {
         // Create the shader
         const shader = gl.createShader(type);
         // Set the shader source

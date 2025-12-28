@@ -114,6 +114,9 @@ export default class SkyBox {
 
     // Sets up the shader samplers
     static setupShaderSamplers(gl, program) {
+        // Use the shader program
+        program.use();
+
         // Get the sky box sampler location
         const uSkyboxLoc = program.getUniformLocation('uSkybox');
 

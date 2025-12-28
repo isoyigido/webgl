@@ -73,6 +73,30 @@ var InitDemo = async function () {
     	}
 	});
 
+	// Define function to resize the canvas
+	function resize() {
+		// Lookup the size the browser is displaying the canvas in CSS pixels
+		const displayWidth  = window.innerWidth;
+		const displayHeight = window.innerHeight;
+
+		// Check if the canvas is not the same size and update it
+		if (canvas.width !== displayWidth || canvas.height !== displayHeight) {
+			canvas.width  = displayWidth;
+			canvas.height = displayHeight;
+			
+			// Update the WebGL viewport to match the new dimensions
+			gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
+			
+			// Create a new camera for the new aspect ratio
+			camera.setAspectRatio(canvas.clientWidth / canvas.clientHeight);
+		}
+	}
+
+	// Add an event listener to resize the canvas
+	window.addEventListener('resize', resize);
+	// Initial resize
+	resize();
+
 	var millisUniformLocation = defaultShader.getUniformLocation('millis');
 	var camPosUniformLocation = defaultShader.getUniformLocation('camPos');
 

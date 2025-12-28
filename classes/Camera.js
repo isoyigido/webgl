@@ -15,6 +15,11 @@ export default class Camera {
 
         // Set the GL context
         this.gl = gl;
+
+        // Set the FOV, near clip distance and far clip distance
+        this.fov = fov;
+        this.near = near;
+        this.far = far;
         
         // Set initial position
         this.position = glMatrix.vec3.fromValues(0, 0, 0);
@@ -29,6 +34,12 @@ export default class Camera {
         glMatrix.mat4.perspective(this.projMatrix, fov, aspect, near, far);
         // Update the view matrix
         this.updateViewMatrix();
+    }
+
+    // Sets the aspect ratio for the camera
+    setAspectRatio(aspectRatio) {
+        // Update the projection matrix
+        glMatrix.mat4.perspective(this.projMatrix, this.fov, aspectRatio, this.near, this.far);
     }
 
     // Moves the camera in world space

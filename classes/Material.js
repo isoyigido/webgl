@@ -11,6 +11,10 @@ export default class Material {
 
     // Sets up the shader samplers
     static setupShaderSamplers(gl, program) {
+        // Use the shader program
+        program.use();
+
+        // Get the uniform locations
         const uColorLoc = program.getUniformLocation('uColorSampler');
         const uNormalLoc = program.getUniformLocation('uNormalSampler');
 

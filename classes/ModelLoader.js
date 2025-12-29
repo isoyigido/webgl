@@ -5,7 +5,7 @@ export default class ModelLoader {
     // Helper method to load in the resources for a model
     static async loadModel(objectName, gl) {
         // Define the root-relative path to the object's folder
-        const folderPath = `/objects/${objectName}/`;
+        const folderPath = `objects/${objectName}/`;
         const modelUrl = `${folderPath}model.obj`;
 
         // 1. Fetch the .obj file

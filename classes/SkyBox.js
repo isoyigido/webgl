@@ -43,7 +43,7 @@ export default class SkyBox {
     // Helper method to load in the cube map
     static loadCubemap(gl, name) {
         return new Promise((resolve, reject) => {
-            const url = '/skyboxes/' + name;
+            const url = 'skyboxes/' + name;
             const texture = gl.createTexture();
             gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
 

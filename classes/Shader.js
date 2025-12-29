@@ -9,8 +9,8 @@ export default class Shader {
     // Static factory method to handle async loading
     static async create(gl, vertexName, fragmentName) {
         // Get the vertex and fragment shader texts
-        const vsText = await this.loadShaderText('/shaders/' + vertexName);
-        const fsText = await this.loadShaderText('/shaders/' + fragmentName);
+        const vsText = await this.loadShaderText('shaders/' + vertexName);
+        const fsText = await this.loadShaderText('shaders/' + fragmentName);
         
         // Create the shader program
         const program = this._createProgram(gl, vsText, fsText);

@@ -102,11 +102,10 @@ var InitDemo = async function () {
 
 	const models = [];
 	
-	const testModel = new Model('test_object', gl, 0, 2.8, 0);
+	const testModel = new Model('test_object', gl, 0, 2.8, -5);
 	const idk = new Model('test_object', gl, 5, 5, 5);
 	const bus = new Model('bus', gl, -8, 0, 0);
 	const ak = new Model('ak', gl, 0, 0, 8);
-	testModel.setScale(3, 3, 3);
 	idk.setScale(0.2, 0.2, 0.2);
 	bus.rotate(-1.5, 0.0, 0.0)
 	bus.setScale(0.2, 0.2, 0.2);

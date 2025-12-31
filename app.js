@@ -102,12 +102,12 @@ var InitDemo = async function () {
 
 	const models = [];
 	
-	const testModel = new Model('test_object', gl, 0, 2.8, -5);
+	const testModel = new Model('test_object', gl, 0, 0, -5);
 	const idk = new Model('test_object', gl, 5, 5, 5);
 	const bus = new Model('bus', gl, -8, 0, 0);
 	const ak = new Model('ak', gl, 0, 0, 8);
 	idk.setScale(0.2, 0.2, 0.2);
-	bus.rotate(-1.5, 0.0, 0.0)
+	bus.rotate(-1.5, 0.0, 0.0);
 	bus.setScale(0.2, 0.2, 0.2);
 	ak.setScale(0.05, 0.05, 0.05);
 	ak.rotate(Math.PI/2, 0, 0);
@@ -127,6 +127,8 @@ var InitDemo = async function () {
 		// - Handle inputs -
 		updateInputs();
 
+		testModel.rotate(0.05, 0, 0);
+		
 		// - Clear the buffers -
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 

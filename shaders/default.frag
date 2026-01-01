@@ -8,7 +8,7 @@ varying vec2 fragTexCoord;
 
 uniform sampler2D uTexture;
 
-const vec3 lightPos = vec3(5.0, 5.0, 5.0);
+const vec3 lightPos = vec3(0.0, 8.0, -8.0);
 const float ambientLight = 0.1;
 const float specularLight = 0.5;
 
@@ -20,7 +20,7 @@ void main() {
 
     vec3 viewDirection = normalize(fragCamPos - fragPos);
     vec3 reflectionDirection = reflect(-lightDirection, normal);
-    float specAmount = max(dot(viewDirection, reflectionDirection), 0.);
+    float specAmount = pow(max(dot(viewDirection, reflectionDirection), 0.), 8.);
     float specular = specularLight * specAmount;
 
     vec4 texCol = texture2D(uTexture, fragTexCoord);

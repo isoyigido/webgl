@@ -7,7 +7,7 @@ export default class Camera {
      * @param {*} near The near clip distance
      * @param {*} far The far clip distance
      */
-    constructor(gl, fov = Math.PI / 4, aspect = 1.33, near = 0.1, far = 1000.0) {
+    constructor(gl, fov = Math.PI / 4, aspect = 1.33, viewModel = null, near = 0.1, far = 1000.0) {
         // Set the constants
         this.moveSpeed = 0.05;
         this.rotationSpeed = 0.01;
@@ -21,6 +21,9 @@ export default class Camera {
         this.near = near;
         this.far = far;
         
+        // Set the view model
+        this.viewModel = viewModel;
+
         // Set initial position
         this.position = glMatrix.vec3.fromValues(0, 0, 0);
         // Set initial rotation
@@ -76,6 +79,9 @@ export default class Camera {
 
         // Invert the camera world matrix to get the view matrix
         glMatrix.mat4.invert(this.viewMatrix, cameraWorldMatrix);
+
+        // Update the world matrix of the view model
+        if (this.viewModel) this.viewModel.updateWorldMatrix(cameraWorldMatrix);
     }
 
     // Helper to send both matrices to a shader at once
@@ -86,6 +92,11 @@ export default class Camera {
         // Send the view and projection matrices
         this.gl.uniformMatrix4fv(shader.getUniformLocation('mView'), false, this.viewMatrix);
         this.gl.uniformMatrix4fv(shader.getUniformLocation('mProj'), false, this.projMatrix);
+    }
+
+    // Renders the view model
+    renderViewModel(gl, shader) {
+        if (this.viewModel) this.viewModel.render(gl, shader);
     }
 
     // --- Movement Functions ---

@@ -1,15 +1,12 @@
 import ModelLoader from "./ModelLoader.js";
 
-export default class Model {
+export default class ViewModel {
     /**
-     * Model constructor
+     * ViewModel constructor
      * @param {*} objectName The name of the model
      * @param {*} gl The GL context
-     * @param {*} x The x coordinate of the model
-     * @param {*} y The y coordinate of the model
-     * @param {*} z The z coordinate of the model
      */
-    constructor(objectName, gl, x, y, z) {
+    constructor(objectName, gl, x = 0, y = 0, z = 0, yaw = 0, pitch = 0, roll = 0) {
         // Set loaded to false
         this.loaded = false;
 
@@ -19,7 +16,7 @@ export default class Model {
         // Initialise position
         this.position = glMatrix.vec3.fromValues(x, y, z);
         // Initialise rotation
-        this.rotation = glMatrix.vec3.fromValues(0, 0, 0);
+        this.rotation = glMatrix.vec3.fromValues(yaw, pitch, roll);
         // Initialise scale (Default to 1, 1, 1)
         this.scale = glMatrix.vec3.fromValues(1, 1, 1);
 
@@ -30,9 +27,6 @@ export default class Model {
         // Initialise the world matrix
         this.worldMatrix = new Float32Array(16);
         glMatrix.mat4.identity(this.worldMatrix);
-
-        // Update the world matrix
-        this.updateWorldMatrix();
     }
 
     // Helper method to load in the model
@@ -49,71 +43,17 @@ export default class Model {
         this.loaded = true;
     }
 
-    // Sets the position of the model
-    setPosition(x, y, z) {
-        this.position[0] = x;
-        this.position[1] = y;
-        this.position[2] = z;
-
-        this.updateWorldMatrix();
-    }
-
-    // Moves the model
-    move(x, y, z) {
-        this.position[0] += x;
-        this.position[1] += y;
-        this.position[2] += z;
-
-        this.updateWorldMatrix();
-    }
-
-    // Sets the rotation of the model
-    setRotation(yaw, pitch, roll) {
-        this.rotation[0] = yaw;
-        this.rotation[1] = pitch;
-        this.rotation[2] = roll;
-
-        this.updateWorldMatrix();
-    }
-
-    // Rotates the model
-    rotate(yaw, pitch, roll) {
-        this.rotation[0] += yaw;
-        this.rotation[1] += pitch;
-        this.rotation[2] += roll;
-
-        this.updateWorldMatrix();
-    }
-
-    // Adjusts the scale of the model
-    adjustScale(x, y, z) {
-        this.scale[0] += x;
-        this.scale[1] += y;
-        this.scale[2] += z;
-
-        this.updateWorldMatrix();
-    }
-
-    // Sets the scale of the model
-    setScale(x, y, z) {
-        this.scale[0] = x;
-        this.scale[1] = y;
-        this.scale[2] = z;
-
-        this.updateWorldMatrix();
-    }
-
     // Updates the model world matrix
-    updateWorldMatrix() {
-        // 1. Reset to identity/translation
-        glMatrix.mat4.translate(this.worldMatrix, this.identityMatrix, this.position);
+    updateWorldMatrix(cameraWorldMatrix) {
+        // 1. Move to relative position
+        glMatrix.mat4.translate(this.worldMatrix, cameraWorldMatrix, this.position);
 
-        // 2. Apply Rotations
+        // 2. Apply relative rotations
         glMatrix.mat4.rotateX(this.worldMatrix, this.worldMatrix, this.rotation[1]);
         glMatrix.mat4.rotateY(this.worldMatrix, this.worldMatrix, this.rotation[0]);
         glMatrix.mat4.rotateZ(this.worldMatrix, this.worldMatrix, this.rotation[2]);
 
-        // 3. Apply Scale
+        // 3. Apply scale
         glMatrix.mat4.scale(this.worldMatrix, this.worldMatrix, this.scale);
     }
 

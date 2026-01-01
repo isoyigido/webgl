@@ -1,8 +1,9 @@
 import Shader from "./classes/Shader.js";
-import Camera from "./classes/Camera.js"
-import Model from "./classes/Model.js"
-import Material from "./classes/Material.js"
-import SkyBox from "./classes/SkyBox.js"
+import Camera from "./classes/Camera.js";
+import Model from "./classes/Model.js";
+import ViewModel from "./classes/ViewModel.js";
+import Material from "./classes/Material.js";
+import SkyBox from "./classes/SkyBox.js";
 
 var camera;
 const keys = {};
@@ -29,7 +30,7 @@ var InitDemo = async function () {
     // If GL is still not initialised (WebGL not supported)
 	if (!gl) {
         // Print error in console
-        console.error('Browser does not support WebGL.')
+        console.error('Browser does not support WebGL.');
         // Alert the client
 		alert('Your browser does not support WebGL.');
 	}
@@ -52,8 +53,10 @@ var InitDemo = async function () {
 	// Create the sky box
 	const skyBox = await SkyBox.create(gl, 'clear_day.png');
 
+	// Initialise the view model
+	const pistol = new ViewModel('pistol_view', gl, 0, -0.3, 0, 0, 0.1, 0);
 	// Create the camera
-	camera = new Camera(gl, Math.PI / 3, canvas.clientWidth / canvas.clientHeight);
+	camera = new Camera(gl, Math.PI / 3, canvas.clientWidth / canvas.clientHeight, pistol);
 
 	window.addEventListener('keydown', (e) => {
     	keys[e.code] = true;
@@ -102,20 +105,20 @@ var InitDemo = async function () {
 
 	const models = [];
 	
-	const testModel = new Model('test_object', gl, 0, 0, -5);
-	const idk = new Model('test_object', gl, 5, 5, 5);
+	const testModel = new Model('test_object', gl, 0, 2.8, -20);
+	const idk = new Model('test_object', gl, 0, 8, -8);
 	const bus = new Model('bus', gl, -8, 0, 0);
-	const ak = new Model('ak', gl, 0, 0, 8);
+	const cube = new Model('cube', gl, 0, 0, 0);
+	testModel.setScale(3, 3, 3);
 	idk.setScale(0.2, 0.2, 0.2);
 	bus.rotate(-1.5, 0.0, 0.0);
 	bus.setScale(0.2, 0.2, 0.2);
-	ak.setScale(0.05, 0.05, 0.05);
-	ak.rotate(Math.PI/2, 0, 0);
+	cube.setScale(4, 1, 4);
 
 	models.push(testModel);
 	models.push(idk);
 	models.push(bus);
-	models.push(ak);
+	models.push(cube);
 
 	// Set up shader samplers for the Material class
 	Material.setupShaderSamplers(gl, defaultShader);
@@ -127,8 +130,6 @@ var InitDemo = async function () {
 		// - Handle inputs -
 		updateInputs();
 
-		testModel.rotate(0.05, 0, 0);
-		
 		// - Clear the buffers -
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
@@ -145,6 +146,9 @@ var InitDemo = async function () {
     	models.forEach(model => {
       		model.render(gl, defaultShader);
     	});
+
+		// - Render the camera view model *
+		camera.renderViewModel(gl, defaultShader);
 
 		// - Use the sky box shader and bind the camera -
 		skyboxShader.use();

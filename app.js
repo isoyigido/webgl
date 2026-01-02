@@ -118,11 +118,14 @@ var InitDemo = async function () {
 	
 	const agent = new Model('sas_blue', gl, 4, 0, -8);
 	const knight = new Model('bulky_knight', gl, -4, 0, -8);
-	const cube = new Model('cube', gl, 0, 0, 0);
+	const cube = new Model('no_texture_cube', gl, 0, 0, -8);
+	const light = new Model('no_texture_cube', gl, 0, 4, -4);
 	knight.setScale(32, 32, 32);
+	light.setScale(0.1, 0.1, 0.1);
 	models.push(agent);
 	models.push(knight);
 	models.push(cube);
+	models.push(light);
 
 	// Set up shader samplers for the Material class
 	Material.setupShaderSamplers(gl, defaultShader);

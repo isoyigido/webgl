@@ -8,7 +8,7 @@ varying vec2 fragTexCoord;
 
 uniform sampler2D uTexture;
 
-const vec3 lightPos = vec3(0.0, 8.0, -8.0);
+const vec3 lightPos = vec3(0.0, 4.0, -4.0);
 const float ambientLight = 0.1;
 const float specularLight = 0.5;
 

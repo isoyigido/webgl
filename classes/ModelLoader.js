@@ -7,7 +7,7 @@ export default class ModelLoader {
     // Loads in a .glb file
     static async loadModel(modelName, gl) {
         // Get the URL for the model name (e.g., '/models/car.glb')
-        const url = `/models/${modelName}.glb`;
+        const url = `models/${modelName}.glb`;
         // Get the raw GLTF data
         const gltfRaw = await load(url, GLTFLoader);
         // Process the raw GLTF data

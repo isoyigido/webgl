@@ -150,11 +150,11 @@ var InitDemo = async function () {
 
     	// - Draw every object in the scene -
     	models.forEach(model => {
-      		model.render(gl, defaultShader);
+      		model.render(defaultShader);
     	});
 
 		// - Render the camera view model *
-		camera.renderViewModel(gl, defaultShader);
+		camera.renderViewModel(defaultShader);
 
 		// - Use the sky box shader and bind the camera -
 		skyboxShader.use();

@@ -2,11 +2,13 @@ export default class Material {
     /**
      * Material constructor
      * @param colorTexture The color texture
-     * @param normalTexture The normal map
+     * @param normalMap The normal map
      */
-    constructor(colorTexture, normalTexture = null) {
+    constructor(colorTexture, normalMap) {
         this.colorTexture = colorTexture;
-        this.normalTexture = normalTexture;
+
+        this.normalTexture = normalMap.texture;
+        this.normalScale = normalMap.normalScale;
     }
 
     // Sets up the shader samplers
@@ -24,15 +26,25 @@ export default class Material {
     }
 
     // Applies the materials
-    apply(gl) {
+    apply(gl, shader) {
         // Bind color to Slot 0
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, this.colorTexture);
 
-        // Bind normal to Slot 1 (if it exists)
+        // If there is a normal map
         if (this.normalTexture) {
+            // Notify the shader that there is a normal map
+            gl.uniform1i(shader.getUniformLocation('uHasNormalMap'), true);
+
+            // Bind normal to Slot 1
             gl.activeTexture(gl.TEXTURE1);
             gl.bindTexture(gl.TEXTURE_2D, this.normalTexture);
+
+            // Send normal scale uniform
+            gl.uniform1f(shader.getUniformLocation('uNormalScale'), this.normalScale);
+        } else {
+            // Notify the shader that there is no normal map
+            gl.uniform1i(shader.getUniformLocation('uHasNormalMap'), false);
         }
     }
 }

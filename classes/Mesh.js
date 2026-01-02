@@ -57,7 +57,7 @@ export default class Mesh {
         // Get the GL context
         const gl = this.gl;
         // Define the mapping
-        const mapping = { 'POSITION': 'aPos', 'NORMAL': 'aNormal', 'TEXCOORD_0': 'aTexCoord' };
+        const mapping = { 'POSITION': 'aPos', 'NORMAL': 'aNormal', 'TEXCOORD_0': 'aTexCoord', 'TANGENT': 'aTangent' };
 
         // For each mapping
         for (const [gltfName, shaderName] of Object.entries(mapping)) {

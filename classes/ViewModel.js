@@ -7,6 +7,9 @@ export default class ViewModel {
      * @param {*} gl The GL context
      */
     constructor(modelName, gl, x, y, z, yaw, pitch, roll, x_scale, y_scale, z_scale) {
+        // Set the GL context
+        this.gl = gl;
+
         // Set loaded to false
         this.loaded = false;
 
@@ -54,7 +57,7 @@ export default class ViewModel {
     }
 
     // Renders the model
-    render(gl, shader) {
+    render(shader) {
         if (!this.loaded) return;
 
         // Get the uniform location for the world matrix
@@ -68,10 +71,10 @@ export default class ViewModel {
             glMatrix.mat4.multiply(finalMatrix, this.worldMatrix, item.modelSpaceMatrix);
 
             // Upload the final calculated matrix
-            gl.uniformMatrix4fv(uWorldLocation, false, finalMatrix);
+            this.gl.uniformMatrix4fv(uWorldLocation, false, finalMatrix);
 
             // Apply the material of the renderable
-            item.material.apply(gl);
+            item.material.apply(this.gl, shader);
             // Set up the attributes of the mesh
             item.mesh.setupAttributes(shader);
             // Draw the mesh of the renderable

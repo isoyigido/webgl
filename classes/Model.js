@@ -10,6 +10,9 @@ export default class Model {
      * @param {*} z The z coordinate of the model
      */
     constructor(modelName, gl, x, y, z) {
+        // Set the GL context
+        this.gl = gl;
+
         // Set loaded to false
         this.loaded = false;
 
@@ -46,7 +49,7 @@ export default class Model {
     }
 
     // Renders the model
-    render(gl, shader) {
+    render(shader) {
         if (!this.loaded) return;
 
         // Get the uniform location for the world matrix
@@ -60,10 +63,10 @@ export default class Model {
             glMatrix.mat4.multiply(finalMatrix, this.worldMatrix, item.modelSpaceMatrix);
 
             // Upload the final calculated matrix
-            gl.uniformMatrix4fv(uWorldLocation, false, finalMatrix);
+            this.gl.uniformMatrix4fv(uWorldLocation, false, finalMatrix);
 
             // Apply the material of the renderable
-            item.material.apply(gl);
+            item.material.apply(this.gl, shader);
             // Set up the attributes of the mesh
             item.mesh.setupAttributes(shader);
             // Draw the mesh of the renderable

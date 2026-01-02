@@ -55,16 +55,31 @@ export default class ModelLoader {
                     // Initialise the mesh instance
                     const mesh = new Mesh(gl, attributes, indices);
                     
-                    // Get the base color texture
+                    // - Get the base color texture -
                     let colorTex = null;
                     if (prim.material?.pbrMetallicRoughness?.baseColorTexture?.texture) {
                         colorTex = this.createGLTexture(gl, prim.material.pbrMetallicRoughness.baseColorTexture.texture.source.image);
                     }
 
+                    // - Get the normal map -
+                    let normalTex = null;
+                    let normalScale = 1.0; // default scale
+
+                    // If the material has a normal map
+                    if (prim.material?.normalTexture?.texture) {
+                        // Get the normal map as a GL texture
+                        normalTex = this.createGLTexture(gl, prim.material.normalTexture.texture.source.image);
+                        
+                        // Get the normal scale to control bump intensity
+                        if (prim.material.normalTexture.scale !== undefined) {
+                            normalScale = prim.material.normalTexture.scale;
+                        }
+                    }
+
                     // Add new renderable
                     renderables.push({ 
                         mesh, 
-                        material: new Material(colorTex),
+                        material: new Material(colorTex, {texture: normalTex, normalScale: normalScale}),
                         modelSpaceMatrix: modelSpaceMatrix 
                     });
                 }

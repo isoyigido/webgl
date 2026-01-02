@@ -2,58 +2,86 @@ export default class Mesh {
     /**
      * Mesh constructor
      * @param {*} gl The GL context
-     * @param {*} vertices The vertices of the mesh
-     * @param {*} indices The corner indices of the triangles that make up the mesh
+     * @param {*} attributes The attributes of the mesh
+     * @param {*} indices The indices of the mesh
      */
-    constructor(gl, vertices, indices) {
-        // Set the GL context
+    constructor(gl, attributes, indices) {
         this.gl = gl;
-        // Set the number of indices
-        this.indexCount = indices.length;
 
-        // Create and fill Vertex Buffer (VBO)
-        this.vertexBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+        // Get the index data
+        const rawIndices = indices?.value || indices;
+        
+        // 1. Handle Indices
+        // If the indices are valid
+        if (Array.isArray(rawIndices) || ArrayBuffer.isView(rawIndices)) {
+            // Set the index count
+            this.indexCount = rawIndices.length;
+            // Create the index buffer
+            this.indexBuffer = gl.createBuffer();
+            // Bind the buffer
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
+            // Buffer the index data
+            gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(rawIndices), gl.STATIC_DRAW);
+        } else {
+            console.error("Indices is not an array! Value:", indices);
+        }
 
-        // Create and fill Index Buffer (IBO/EBO)
-        this.indexBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
+        // 2. Handle Attributes
+        // Initialise the attribute buffers
+        this.attributeBuffers = {};
+        // For each attribute
+        for (const [name, data] of Object.entries(attributes)) {
+            // Get the attribute data
+            const bufferValue = data.value || data;
+            
+            // If the data is valid
+            if (Array.isArray(bufferValue) || ArrayBuffer.isView(bufferValue)) {
+                // Create the array buffer
+                const buffer = gl.createBuffer();
+                // Bind the array buffer
+                gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+                // Buffer the attribute data
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(bufferValue), gl.STATIC_DRAW);
+                
+                // Save the attribute buffer
+                this.attributeBuffers[name] = {
+                    buffer: buffer,
+                    size: name === 'TEXCOORD_0' ? 2 : 3 // UVs are 2, others 3
+                };
+            }
+        }
     }
 
-    // Set up the attributes
+    // Sets up the attributes for the mesh
     setupAttributes(shader) {
-        // Initialise constant GL context
+        // Get the GL context
         const gl = this.gl;
-        // Get the location of the position attribute
-        const posLoc = shader.getAttribLocation('aPos');
-        // Get the location of the normal attribute
-        const normalLoc = shader.getAttribLocation('aNormal');
-        // Get the location of the texture coordinate attribute
-        const texCoordLoc = shader.getAttribLocation('aTexCoord');
-        // Get the stride per primitive (triangle)
-        const stride = 8 * Float32Array.BYTES_PER_ELEMENT;
+        // Define the mapping
+        const mapping = { 'POSITION': 'aPos', 'NORMAL': 'aNormal', 'TEXCOORD_0': 'aTexCoord' };
 
-        // Bind the vertex buffer
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
-        
-        // Get the vertex attribute pointers
-        gl.vertexAttribPointer(posLoc, 3, gl.FLOAT, gl.FALSE, stride, 0);
-        gl.vertexAttribPointer(normalLoc, 3, gl.FLOAT, gl.FALSE, stride, 3 * Float32Array.BYTES_PER_ELEMENT);
-        gl.vertexAttribPointer(texCoordLoc, 2, gl.FLOAT, gl.FALSE, stride, 6 * Float32Array.BYTES_PER_ELEMENT);
+        // For each mapping
+        for (const [gltfName, shaderName] of Object.entries(mapping)) {
+            // Get the attribute location
+            const loc = shader.getAttribLocation(shaderName);
+            // Get the attribute data
+            const data = this.attributeBuffers[gltfName];
 
-        // Enable the vertex attribute arrays
-        gl.enableVertexAttribArray(posLoc);
-        gl.enableVertexAttribArray(normalLoc);
-        gl.enableVertexAttribArray(texCoordLoc);
+            // If the location is valid and data is not null
+            if (loc !== -1 && data) {
+                // Bind the array buffer
+                gl.bindBuffer(gl.ARRAY_BUFFER, data.buffer);
+                gl.enableVertexAttribArray(loc);
+                gl.vertexAttribPointer(loc, data.size, gl.FLOAT, false, 0, 0);
+            }
+        }
 
         // Bind the index buffer
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
     }
 
+    // Draws the mesh
     draw() {
-        // Draw the primitives (triangles)
+        // Draw the primitives (triangles) of the mesh
         this.gl.drawElements(this.gl.TRIANGLES, this.indexCount, this.gl.UNSIGNED_SHORT, 0);
     }
 }

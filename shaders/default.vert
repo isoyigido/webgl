@@ -15,8 +15,6 @@ uniform mat4 mWorld;
 uniform mat4 mView;
 uniform mat4 mProj;
 
-uniform float millis;
-
 void main() {
     //vec3 baPos = aPos;
     //baPos.z += sin(millis/521.) * 0.5;

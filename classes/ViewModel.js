@@ -3,41 +3,37 @@ import ModelLoader from "./ModelLoader.js";
 export default class ViewModel {
     /**
      * ViewModel constructor
-     * @param {*} objectName The name of the model
+     * @param {*} modelName The name of the model
      * @param {*} gl The GL context
      */
-    constructor(objectName, gl, x = 0, y = 0, z = 0, yaw = 0, pitch = 0, roll = 0) {
+    constructor(modelName, gl, x, y, z, yaw, pitch, roll, x_scale, y_scale, z_scale) {
         // Set loaded to false
         this.loaded = false;
 
-        // Load in the model
-        this.loadIn(objectName, gl);
+        // The list of { mesh, material }
+        this.renderables = [];
+        
+        // Load in the model resources
+        this.loadIn(modelName, gl);
 
         // Initialise position
         this.position = glMatrix.vec3.fromValues(x, y, z);
         // Initialise rotation
         this.rotation = glMatrix.vec3.fromValues(yaw, pitch, roll);
         // Initialise scale (Default to 1, 1, 1)
-        this.scale = glMatrix.vec3.fromValues(1, 1, 1);
+        this.scale = glMatrix.vec3.fromValues(x_scale, y_scale, z_scale);
 
         // Initialise the identity matrix
-        this.identityMatrix = new Float32Array(16);
-        glMatrix.mat4.identity(this.identityMatrix);
+        this.identityMatrix = glMatrix.mat4.create();
         
         // Initialise the world matrix
-        this.worldMatrix = new Float32Array(16);
-        glMatrix.mat4.identity(this.worldMatrix);
+        this.worldMatrix = glMatrix.mat4.create();
     }
 
-    // Helper method to load in the model
-    async loadIn(objectName, gl) {
-        // Load in the resources
-        const data = await ModelLoader.loadModel(objectName, gl);
-        
-        // Set the mesh
-        this.mesh = data.mesh;
-        // Set the texture
-        this.material = data.material;
+    // Loads in the model resources
+    async loadIn(modelName, gl) {
+        // ModelLoader returns an array of {mesh, material}
+        this.renderables = await ModelLoader.loadModel(modelName, gl);
 
         // Set loaded to true
         this.loaded = true;
@@ -57,21 +53,29 @@ export default class ViewModel {
         glMatrix.mat4.scale(this.worldMatrix, this.worldMatrix, this.scale);
     }
 
-    // Renders the model on the input GL context and shader
+    // Renders the model
     render(gl, shader) {
-        // Wait until loaded
         if (!this.loaded) return;
 
-        // 1. Apply the material
-        this.material.apply(gl, shader);
+        // Get the uniform location for the world matrix
+        const uWorldLocation = shader.getUniformLocation('mWorld');
+        // Create a temporary buffer
+        const finalMatrix = glMatrix.mat4.create();
 
-        // 2. Send this model's unique matrix to the GPU
-        gl.uniformMatrix4fv(shader.getUniformLocation('mWorld'), false, this.worldMatrix);
+        // For each renderable
+        for (const item of this.renderables) {
+            // finalMatrix = EntityWorldPosition * MeshModelSpacePosition
+            glMatrix.mat4.multiply(finalMatrix, this.worldMatrix, item.modelSpaceMatrix);
 
-        // 3. Set up attributes
-        this.mesh.setupAttributes(shader);
-        
-        // 4. Draw the mesh
-        this.mesh.draw();
+            // Upload the final calculated matrix
+            gl.uniformMatrix4fv(uWorldLocation, false, finalMatrix);
+
+            // Apply the material of the renderable
+            item.material.apply(gl);
+            // Set up the attributes of the mesh
+            item.mesh.setupAttributes(shader);
+            // Draw the mesh of the renderable
+            item.mesh.draw();
+        }
     }
 }

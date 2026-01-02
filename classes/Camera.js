@@ -9,7 +9,7 @@ export default class Camera {
      */
     constructor(gl, fov = Math.PI / 4, aspect = 1.33, viewModel = null, near = 0.1, far = 1000.0) {
         // Set the constants
-        this.moveSpeed = 0.05;
+        this.moveSpeed = 0.03;
         this.rotationSpeed = 0.01;
         this.mouseSensitivity = 0.002;
 
@@ -25,7 +25,7 @@ export default class Camera {
         this.viewModel = viewModel;
 
         // Set initial position
-        this.position = glMatrix.vec3.fromValues(0, 0, 0);
+        this.position = glMatrix.vec3.fromValues(0, 1.8, 0); // TEMPORARY
         // Set initial rotation
         this.rotation = glMatrix.vec3.fromValues(0, 0, 0); // [Yaw, Pitch, Roll]
 

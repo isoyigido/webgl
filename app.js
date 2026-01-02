@@ -8,7 +8,8 @@ import SkyBox from "./classes/SkyBox.js";
 var camera;
 const keys = {};
 
-async function updateInputs() {
+// Handles keyboard inputs
+async function handleInputs() {
 	camera.handleInputs(keys);
 }
 
@@ -54,22 +55,31 @@ var InitDemo = async function () {
 	const skyBox = await SkyBox.create(gl, 'clear_day.png');
 
 	// Initialise the view model
-	const pistol = new ViewModel('pistol_view', gl, 0, -0.3, 0, 0, 0.1, 0);
+	const pistol = new ViewModel(
+		'pistol_view', gl,
+		0, -0.3, 0,
+		Math.PI, 0.1, 0,
+		0.01, 0.01, 0.01
+	);
 	// Create the camera
 	camera = new Camera(gl, Math.PI / 3, canvas.clientWidth / canvas.clientHeight, pistol);
 
+	// Add an event listener for pressing keys
 	window.addEventListener('keydown', (e) => {
     	keys[e.code] = true;
 	});
 
+	// Add an event listener for releasing keys
 	window.addEventListener('keyup', (e) => {
     	keys[e.code] = false;
 	});
 
+	// Add an event listener for clicking
 	canvas.addEventListener('mousedown', () => {
     	canvas.requestPointerLock();
 	});
 
+	// Add an event listener for mouse cursor movement
 	window.addEventListener('mousemove', (e) => {
    		if (document.pointerLockElement === canvas) {
 			camera.handleMouseMove(e);
@@ -100,24 +110,18 @@ var InitDemo = async function () {
 	// Initial resize
 	resize();
 
-	var millisUniformLocation = defaultShader.getUniformLocation('millis');
+	// Get the uniform location for the camera position (TEMPORARY)
 	var camPosUniformLocation = defaultShader.getUniformLocation('camPos');
 
+	// Initialise the array of models
 	const models = [];
 	
-	const testModel = new Model('test_object', gl, 0, 2.8, -20);
-	const idk = new Model('test_object', gl, 0, 8, -8);
-	const bus = new Model('bus', gl, -8, 0, 0);
+	const agent = new Model('sas_blue', gl, 4, 0, -8);
+	const knight = new Model('bulky_knight', gl, -4, 0, -8);
 	const cube = new Model('cube', gl, 0, 0, 0);
-	testModel.setScale(3, 3, 3);
-	idk.setScale(0.2, 0.2, 0.2);
-	bus.rotate(-1.5, 0.0, 0.0);
-	bus.setScale(0.2, 0.2, 0.2);
-	cube.setScale(4, 1, 4);
-
-	models.push(testModel);
-	models.push(idk);
-	models.push(bus);
+	knight.setScale(32, 32, 32);
+	models.push(agent);
+	models.push(knight);
 	models.push(cube);
 
 	// Set up shader samplers for the Material class
@@ -128,7 +132,7 @@ var InitDemo = async function () {
 	// --- Main render loop ---
 	var loop = function() {
 		// - Handle inputs -
-		updateInputs();
+		handleInputs();
 
 		// - Clear the buffers -
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -139,7 +143,6 @@ var InitDemo = async function () {
 		gl.depthFunc(gl.LESS);
 
 		// - Pass uniforms -
-		gl.uniform1f(millisUniformLocation, performance.now());
 		gl.uniform3fv(camPosUniformLocation, camera.position);
 
     	// - Draw every object in the scene -

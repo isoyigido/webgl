@@ -40,6 +40,9 @@ export default class ViewModel {
 
         // Set loaded to true
         this.loaded = true;
+
+        // Print console message
+        console.log(`${modelName} loaded in successfully.`);
     }
 
     // Updates the model world matrix

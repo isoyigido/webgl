@@ -46,6 +46,9 @@ export default class Model {
 
         // Set loaded to true
         this.loaded = true;
+
+        // Print console message
+        console.log(`${modelName} loaded in successfully.`);
     }
 
     // Renders the model

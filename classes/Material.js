@@ -3,12 +3,17 @@ export default class Material {
      * Material constructor
      * @param colorTexture The color texture
      * @param normalMap The normal map
+     * @param ormMap The ORM (Occlusion, Roughness, Metalness) map
      */
-    constructor(colorTexture, normalMap) {
+    constructor(colorTexture, normalMap, ormMap) {
         this.colorTexture = colorTexture;
 
         this.normalTexture = normalMap.texture;
         this.normalScale = normalMap.normalScale;
+
+        this.ormTexture = ormMap.texture;
+        this.roughFactor = ormMap.roughFactor;
+        this.metalFactor = ormMap.metalFactor;
     }
 
     // Sets up the shader samplers
@@ -16,13 +21,10 @@ export default class Material {
         // Use the shader program
         program.use();
 
-        // Get the uniform locations
-        const uColorLoc = program.getUniformLocation('uColorSampler');
-        const uNormalLoc = program.getUniformLocation('uNormalSampler');
-
         // Tell the shader variables which "Slots" to watch forever
-        gl.uniform1i(uColorLoc, 0); // Color Texture is always Slot 0
-        gl.uniform1i(uNormalLoc, 1); // Normal map is always Slot 1
+        gl.uniform1i(program.getUniformLocation('uColorSampler'), 0); // Color Texture is always Slot 0
+        gl.uniform1i(program.getUniformLocation('uNormalSampler'), 1); // Normal map is always Slot 1
+        gl.uniform1i(program.getUniformLocation('uOrmSampler'), 2); // ORM map is always Slot 2
     }
 
     // Applies the materials
@@ -45,6 +47,24 @@ export default class Material {
         } else {
             // Notify the shader that there is no normal map
             gl.uniform1i(shader.getUniformLocation('uHasNormalMap'), false);
+        }
+
+        // If there is an ORM map
+        if (this.ormTexture) {
+            // Notify the shader that there is an ORM map
+            gl.uniform1i(shader.getUniformLocation('uHasOrmMap'), true);
+
+            // Bind ORM to Slot 2
+            gl.activeTexture(gl.TEXTURE2);
+            gl.bindTexture(gl.TEXTURE_2D, this.ormTexture);
+
+            // Send roughness factor uniform
+            gl.uniform1f(shader.getUniformLocation('uRoughFactor'), this.roughFactor);
+            // Send metalness factor uniform
+            gl.uniform1f(shader.getUniformLocation('uMetalFactor'), this.metalFactor);
+        } else {
+            // Notify the shader that there is no ORM map
+            gl.uniform1i(shader.getUniformLocation('uHasOrmMap'), false);
         }
     }
 }

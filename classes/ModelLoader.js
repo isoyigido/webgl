@@ -76,10 +76,28 @@ export default class ModelLoader {
                         }
                     }
 
+                    // - Get the ORM (Occlusion, Roughness, Metalness) map -
+                    let ormTex = null;
+
+                    // If the material has an ORM map
+                    if (prim.material?.pbrMetallicRoughness?.metallicRoughnessTexture?.texture) {
+                        // Get the ORM map as a GL texture
+                        ormTex = this.createGLTexture(gl, prim.material.pbrMetallicRoughness.metallicRoughnessTexture.texture.source.image);
+                    }
+
+                    // If there is no texture, these numbers are used. 
+                    // If there IS a texture, these are multiplied by the texture values.
+                    let metalFactor = prim.material?.pbrMetallicRoughness?.metallicFactor ?? 1.0;
+                    let roughFactor = prim.material?.pbrMetallicRoughness?.roughnessFactor ?? 1.0;
+
                     // Add new renderable
                     renderables.push({ 
                         mesh, 
-                        material: new Material(colorTex, {texture: normalTex, normalScale: normalScale}),
+                        material: new Material(
+                            colorTex,
+                            {texture: normalTex, normalScale: normalScale},
+                            {texture: ormTex, roughFactor: roughFactor, metalFactor: metalFactor}
+                        ),
                         modelSpaceMatrix: modelSpaceMatrix 
                     });
                 }

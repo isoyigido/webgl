@@ -7,15 +7,20 @@ varying mat3 vTBN;
 
 uniform sampler2D uColorSampler;
 uniform sampler2D uNormalSampler;
+uniform sampler2D uOrmSampler;
+
 uniform float uNormalScale;
+uniform float uRoughFactor;
+uniform float uMetalFactor;
 
 uniform vec3 camPos;
 
 uniform bool uHasNormalMap;
+uniform bool uHasOrmMap;
 
 const vec3 lightPos = vec3(0.0, 4.0, -4.0);
-const float ambientLight = 0.1;
-const float specularLight = 0.5;
+
+const vec3 ambientLightColor = vec3(0.2);
 
 void main() {
     vec3 normal;
@@ -36,20 +41,53 @@ void main() {
     }
     // If there is no normal map
     else {
+        // Use the mesh normal
         normal = fragNormal;
     }
 
+    float ambientOcclusion;
+    float roughness;
+    float metalness;
+
+    // If there is an ORM map
+    if (uHasOrmMap) {
+        // 1. Sample the ORM map
+        vec3 orm = texture2D(uOrmSampler, fragTexCoord).rgb;
     
-    vec3 lightDirection = normalize(lightPos - fragPos);
+        // 2. Extract and apply factors
+        ambientOcclusion = orm.r; 
+        roughness = orm.g * uRoughFactor;
+        metalness = orm.b * uMetalFactor;
+    }
+    // If there is no ORM map
+    else {
+        // Use default values
+        ambientOcclusion = 1.0;
+        roughness = uRoughFactor;
+        metalness = uMetalFactor;
+    }
 
-    float diffuse = max(dot(normal, lightDirection), 0.);
-
-    vec3 viewDirection = normalize(camPos - fragPos);
-    vec3 reflectionDirection = reflect(-lightDirection, normal);
-    float specAmount = pow(max(dot(viewDirection, reflectionDirection), 0.), 8.);
-    float specular = specularLight * specAmount;
+    vec3 viewDir = normalize(camPos - fragPos);
+    vec3 lightDir = normalize(lightPos - fragPos);
+    vec3 halfwayDir = normalize(lightDir + viewDir);
 
     vec3 albedo = texture2D(uColorSampler, fragTexCoord).rgb;
 
-    gl_FragColor = vec4(albedo * (diffuse + ambientLight + specular), 1.0);
+    vec3 ambient = ambientLightColor * albedo * ambientOcclusion;
+
+    float diffuse = dot(normal, lightDir);
+
+    vec3 specularLight = vec3(0.0);
+    if (diffuse > 0.0) {
+        float shininess = pow(2.0, 8.0 * (1.0 - roughness));
+        float specAmount = pow(max(dot(normal, halfwayDir), 0.0), shininess);
+
+        float lightShadowMask = smoothstep(0.0, 0.05, diffuse);
+
+        specularLight = mix(vec3(0.04), albedo, metalness) * specAmount * lightShadowMask;
+    }
+
+    diffuse = max(diffuse, 0.0) * (1.0 - metalness);
+
+    gl_FragColor = vec4(ambient + (albedo * diffuse) + specularLight, 1.0);
 }
